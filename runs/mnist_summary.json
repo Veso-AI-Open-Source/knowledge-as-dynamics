@@ -1,0 +1,67 @@
+{
+  "verdict": "NO-GO (kill-switch: static baseline matches field arm)",
+  "aggregate": {
+    "field": {
+      "field_nmse": 0.04899717019275849,
+      "field_cos": 0.9128209948539734,
+      "basin_agreement": 0.08984375,
+      "dec_agree": 0.08984375,
+      "endpoint_median": 4.140906810760498,
+      "chamfer_rel": NaN,
+      "n_attractors": 0.0,
+      "recon_heldout": 0.10586998611688614
+    },
+    "fieldtraj": {
+      "field_nmse": 0.06804408800305886,
+      "field_cos": 0.9031690359115601,
+      "basin_agreement": 0.005859375,
+      "dec_agree": 0.005859375,
+      "endpoint_median": 5.231008768081665,
+      "chamfer_rel": NaN,
+      "n_attractors": 0.0,
+      "recon_heldout": 0.10522280260920525
+    },
+    "fieldplus": {
+      "field_nmse": 0.04918058264498131,
+      "field_cos": 0.9119715392589569,
+      "basin_agreement": 0.0703125,
+      "dec_agree": 0.0703125,
+      "endpoint_median": 5.717352867126465,
+      "chamfer_rel": 0.8701103346489921,
+      "n_attractors": 11.5,
+      "recon_heldout": 0.03286772407591343
+    },
+    "scratch": {
+      "field_nmse": 1.7841351670525105,
+      "field_cos": 0.5045739114284515,
+      "basin_agreement": 0.0,
+      "dec_agree": 0.0,
+      "endpoint_median": 34.48020935058594,
+      "chamfer_rel": 1.5213616569542123,
+      "n_attractors": 0.5,
+      "recon_heldout": 0.014939900953322649
+    },
+    "outdistill": {
+      "field_nmse": 0.6673556662444602,
+      "field_cos": 0.7028708755970001,
+      "basin_agreement": 0.19140625,
+      "dec_agree": 0.19140625,
+      "endpoint_median": 9.173369407653809,
+      "chamfer_rel": 1.0756670150577683,
+      "n_attractors": 13.0,
+      "recon_heldout": 0.015580933075398207
+    },
+    "latmatch": {
+      "field_nmse": 0.38834569318478196,
+      "field_cos": 0.6341191232204437,
+      "basin_agreement": 0.0,
+      "dec_agree": 0.0,
+      "endpoint_median": 36.55212211608887,
+      "chamfer_rel": 1.5258089591912027,
+      "n_attractors": 1.0,
+      "recon_heldout": 0.013923953287303448
+    }
+  },
+  "ceiling": 0.7109375,
+  "teacher_attractors": 18
+}

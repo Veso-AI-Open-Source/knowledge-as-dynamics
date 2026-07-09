@@ -1,0 +1,396 @@
+% Knowledge as Dynamics — arXiv preprint source.
+% Compile: tectonic main.tex   (figures in ./figures/, copied from ../runs/)
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{microtype}
+\usepackage[round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\enc}{E}
+\newcommand{\dec}{D}
+\newcommand{\Vfield}{V}
+
+\title{Knowledge as Dynamics: Distilling, Composing, and Inheriting\\the Latent Vector Fields of Neural Networks}
+
+\author{%
+Elias Helou\\
+Veso AI\\
+\texttt{elias.helou@veso.ai}\\[1.1em]
+\begin{tikzpicture}[x=0.0075cm,y=0.0075cm]
+\fill[black] (63.02,0.00) -- (30.75,0.00) -- (40.08,27.92) -- (22.39,19.09) -- (0.82,40.66) -- (38.35,60.06) -- (13.87,80.94) -- (25.28,109.22) -- (58.15,81.99) -- (68.49,112.91) -- (98.99,112.91) -- (90.79,87.16) -- (106.09,95.07) -- (128.92,72.25) -- (92.09,53.87) -- (116.53,33.62) -- (104.46,3.69) -- (72.80,30.68) -- (63.02,0.00) -- cycle;
+\end{tikzpicture}
+}
+
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An autoencoder implicitly defines a vector field on its latent space: iterating $f = \enc \circ \dec$ displaces every point by $\Vfield(z) = f(z) - z$, and training induces attractors in this field that encode what the network has learned \citep{fumero2025}. Prior work treats this field as an analysis object. We instead treat a network's learned knowledge \emph{as} its dynamics, and characterize the field as a transmission channel through five laptop-scale, pre-registered experiments. We find: (1)~\emph{sufficiency}---regressing a student's field onto a teacher's transfers the full attractor landscape with zero training data ($0.86$ basin agreement against a $0.99$ ceiling; output distillation $0.53$, static feature matching $0.15$); (2)~\emph{order}---the seed-to-seed \emph{reliability} of transmission changes discontinuously exactly where the teacher's field becomes fully convergent, coinciding with its memorization-to-generalization transition; (3)~\emph{resolution}---fidelity requires the per-step field residual to be small relative to the local basin scale, an inequality violated both by dimension (MNIST, 16-dimensional latents: all methods fail at basin level) and by chart compression (grafting through a foreign encoder's out-of-distribution chart: $0.14$ versus $0.75$ under a designed frame); (4)~\emph{composition}---the fields of two disjoint specialists union into one data-free student ($0.82$ joint agreement), which behavioral merging cannot do at all ($0.13$, grafted side $0.00$); and (5)~\emph{heredity with selection}---knowledge survives five generations of data-free re-distillation essentially undegraded, while memorization-regime structure cannot enter the lineage. We release the complete harness; the full suite runs in roughly twenty-two minutes on a laptop.
+\end{abstract}
+
+\section{Introduction}
+
+Knowledge distillation transfers what one network has learned into another by matching observable quantities of the teacher: output distributions \citep{hinton2015}, intermediate features \citep{romero2015fitnets}, pairwise relations among embeddings \citep{park2019rkd,tung2019similarity,tian2020crd}, or input--output Jacobians \citep{srinivas2018jacobian}. All of these targets are \emph{static}: they describe where the teacher places points, or how its outputs respond locally to inputs, at a single application of the map.
+
+Neural networks also possess a dynamical observable. \citet{fumero2025} showed that any autoencoder defines a vector field on its latent space: the composite map $f(z) = \enc(\dec(z))$ displaces each latent point by $\Vfield(z) = f(z) - z$, and iterating $f$ reveals attractors that emerge from training and characterize the network's learned structure, including its memorization and generalization behavior. That work, and the small literature following it, uses the field to \emph{analyze} a given model.
+
+This paper takes the further step of treating the field as the knowledge itself, and asks what kind of \emph{channel} it is. If what a network knows is how it moves representations under its own re-encoding, then transferring, combining, and preserving knowledge become operations on vector fields: regression (distillation), superposition under a change of coordinates (composition), and iterated re-distillation (inheritance). We study each operation empirically, at deliberately small scale, with falsification criteria fixed before each run and with negative results reported alongside positive ones.
+
+Our contributions are five empirical regularities---stated here as laws with their demonstrated scope, and revisited as conjectures beyond it in Section~\ref{sec:discussion}:
+
+\begin{enumerate}
+  \item \textbf{Sufficiency (Section~\ref{sec:exp2d}).} The field alone carries the learned structure. A student trained only to match $\Vfield_t$ at sampled latent points---no data, no weights---reproduces the teacher's basins of attraction at $0.86$ agreement (ceiling $0.99$). The pre-registered kill switch does not fire: output distillation reaches $0.53$, static latent matching $0.15$, training from scratch on the same data $0.00$.
+  \item \textbf{Order (Sections~\ref{sec:sweep}--\ref{sec:transition}).} Transmissibility is governed by the source's dynamical order. Across a sweep of teacher regimes, the \emph{reliability} of transmission is the discontinuous quantity: seed variance collapses from $\pm 0.25$ to $\pm 0.00$ at exactly the noise level where the teacher's field becomes fully convergent. A stronger hypothesis---that copyability tracks test-time robustness---is falsified by the same data.
+  \item \textbf{Resolution (Sections~\ref{sec:mnist} and~\ref{sec:gi}).} Faithful transmission requires the per-step field residual to be small relative to the \emph{local} basin scale. The inequality fails two independent ways: dimension inflates the residual (MNIST, latent 16: every method fails at basin level, best $0.19$ against a $0.71$ ceiling), and chart compression shrinks the basin scale (grafting knowledge through a foreign encoder's out-of-distribution chart: $0.14$, versus $0.75$--$0.84$ when the same knowledge is grafted isometrically).
+  \item \textbf{Composition (Section~\ref{sec:gi}).} Fields union. One student, distilled data-free from a gated superposition of two disjoint specialists' fields in a \emph{designed} common frame, holds both knowledge sets (joint agreement $0.82$, ceiling $0.98$). Merged output distillation has no mechanism for placing disjoint knowledge and scores $0.13$, with the grafted side at exactly $0.00$.
+  \item \textbf{Heredity with selection (Section~\ref{sec:gi}).} The channel iterates. Five generations of data-free re-distillation retain $91\%$ of the ancestor's joint agreement with stable attractor structure---transmission is not photocopy decay. And it selects: a memorization-regime teacher's structure never enters the lineage ($\leq 0.24$ throughout) while ordered structure rides beside it at $0.89$--$1.00$. What is heritable is what is general.
+\end{enumerate}
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Distillation of static structure.} Classical knowledge distillation matches softened output distributions \citep{hinton2015}; FitNets extend the target to intermediate feature activations \citep{romero2015fitnets}. A family of methods transfers \emph{relational} structure: Relational Knowledge Distillation matches pairwise distances and angles among embeddings \citep{park2019rkd}, Similarity-Preserving distillation matches batch similarity matrices \citep{tung2019similarity}, and Contrastive Representation Distillation maximizes mutual information between teacher and student representations \citep{tian2020crd}. All are functions of a single forward pass. \citet{srinivas2018jacobian} match input--output Jacobians, a first-order local property of the feed-forward map; this too concerns one application of the network, not the iteration of a self-map.
+
+\paragraph{Distillation of manifolds and embeddings.} Recent work distills latent geometry as a static object: \citet{medal2026} fit a constrained autoencoder whose bottleneck reproduces a fixed embedding, and \citet{latentmanifolds2026} distill VAE encoders and observe that resolution-consistent latent manifolds transfer. Neither considers the iterated encode--decode map or its attractors.
+
+\paragraph{Latent-space dynamics.} \citet{fumero2025} establish the latent vector field of $\enc \circ \dec$ as a representation of a trained network, connect its attractors to memorization and generalization, and pose the alignment of fields across models as an open problem. \citet{pappone2025} analyze the per-loop displacement dynamics of recurrent-depth transformers and exploit them for early exiting. Both treat dynamics as something to measure, not to transfer. Score-based and diffusion models \citep{ho2020ddpm,song2021score} parameterize vector fields by construction; the field studied here is instead \emph{emergent}---induced by re-encoding rather than trained as a generative target---though the transmission machinery developed below may port to trained fields as well. Our alignment and frame constructions (Sections~\ref{sec:align} and~\ref{sec:union}) operationalize the open problem of \citet{fumero2025} in the service of transfer.
+
+\paragraph{Positioning.} To the best of our knowledge, based on a systematic search of arXiv and citation indices conducted in July 2026 (including all works then citing \citealp{fumero2025}), no prior publication trains a student network to match a teacher's iterated-map displacement field, composes two models' fields into one student, or studies the generational transmission of such fields. The methods above transfer static snapshots of the map; we transfer, combine, and propagate how representations \emph{move} under the model's own re-encoding.
+
+\section{The Object and the Channel}
+\label{sec:method}
+
+\subsection{The latent vector field}
+
+Let $\enc : \mathcal{X} \to \mathcal{Z}$ and $\dec : \mathcal{Z} \to \mathcal{X}$ be the encoder and decoder of a trained autoencoder. Following \citet{fumero2025}, the composite map on latent space,
+\begin{equation}
+  f(z) = \enc(\dec(z)), \qquad \Vfield(z) = f(z) - z,
+\end{equation}
+defines a discrete dynamical system $z_{t+1} = f(z_t)$. Attracting fixed points $z^\star$ (with $\Vfield(z^\star)=0$) and their basins constitute a compact summary of what the network has learned: standard training biases produce contraction toward the learned data manifold, and the attractor landscape encodes its structure.
+
+\subsection{Vector-field distillation}
+
+Given a frozen teacher with field $\Vfield_t$, we train a freshly initialized student by regressing its field onto the teacher's at sampled latent points:
+\begin{equation}
+  \mathcal{L}_{\mathrm{VF}}(s) \;=\; \mathbb{E}_{z \sim p(z)} \big\| \Vfield_s(z) - \Vfield_t(z) \big\|_2^2 ,
+  \label{eq:vf}
+\end{equation}
+where $p(z)$ is a sampling prior over the latent region of interest. The objective is \emph{data-free}---no training example appears in Eq.~\eqref{eq:vf}; the teacher is queried only through its latent self-map---and it constrains the student's composite map on latent space while leaving its data-space behavior unconstrained (a small reconstruction anchor is added where data-space behavior is also desired). A multi-step variant matches iterates $f^{\,k}$ directly for $k \in K$; anticipating the results, it never outperformed the one-step objective and is reported as an ablation.
+
+\subsection{Comparing fields across models}
+\label{sec:align}
+
+A student's latent chart need not coincide with the teacher's, so fields are compared up to a change of coordinates. Given an invertible affine map $A(z) = zW + b$ from student to teacher coordinates, the student's field in teacher coordinates is
+\begin{equation}
+  \widehat{\Vfield}_s(z) \;=\; A\!\big(f_s(A^{-1}(z))\big) - z .
+\end{equation}
+For every trained student we fit $W, b$ by least squares between student and teacher encodings of the training data, and grant each method the better of $\{$identity, fitted affine$\}$ by field error on a held-out probe set---a best-case protocol that is deliberately generous to the baselines. Affine maps cannot capture arbitrary nonlinear re-parameterizations; we return to this in Section~\ref{sec:limitations}.
+
+\subsection{Evaluation protocol and pre-registered kill switches}
+\label{sec:eval}
+
+Four quantities are evaluated, always in teacher (or common-frame) coordinates. \textbf{Field error}: normalized MSE and mean cosine similarity over probe points where $\|\Vfield_t\|$ exceeds its 10th percentile. \textbf{Basin agreement}: probes are iterated to their limiting points in both models (300--1{,}000 steps, clipped to a sanity box); agreement is the fraction of endpoints within a tolerance $\varepsilon$ of the reference endpoints. Because no student can be expected to exceed the source's own stability, we always report the \textbf{self-agreement ceiling}---the same statistic for the source against itself under small probe perturbations---and the source's convergence fraction, flagging regimes where endpoint metrics are ill posed. \textbf{Attractor recovery}: symmetric Chamfer distance between attractor sets extracted by iterating a bank of starts and merging converged endpoints. \textbf{Functional carryover}: held-out reconstruction error, for completeness.
+
+Each experiment fixes a falsification criterion before running. For distillation: \emph{if output distillation or static latent matching comes within $0.05$ basin agreement of the field-distilled student, the field carries no proprietary information and the method is redundant.} For composition: \emph{if merged output distillation comes within $0.05$ joint agreement of the field-union student, composition is likewise redundant.} Negative outcomes are reported as results, not filtered.
+
+\subsection{Union frames and lineages}
+\label{sec:union}
+
+\paragraph{Union frames.} To compose two teachers $A$ and $B$ with disjoint knowledge, we construct a common frame that holds $A$'s chart natively and grafts $B$'s chart through an affine conjugacy $T : z_B \to z_{\mathrm{frame}}$. The union field is a gated superposition,
+\begin{equation}
+  \Vfield_{\cup}(z) \;=\;
+  \begin{cases}
+    \Vfield_A(z) & g(z) = A,\\[2pt]
+    T\!\big(f_B(T^{-1}(z))\big) - z & g(z) = B,
+  \end{cases}
+\end{equation}
+with $g$ a nearest-centroid gate over the frame positions of the two knowledge sets. The union \emph{oracle} iterates this gated composite map; students distill from $\Vfield_{\cup}$ data-free via Eq.~\eqref{eq:vf}. Two constructions of $T$ are compared: \emph{fitted} (least squares onto where $A$'s encoder places $B$'s inputs---input-consistent, but dependent on $A$'s out-of-distribution behavior) and \emph{isometric} (a pure translation placing $B$'s chart, undistorted, into empty frame territory---the frame as a designed object owned by no ancestor).
+
+\paragraph{Lineages.} Generation $1$ distills from $\Vfield_{\cup}$; generation $k{+}1$ distills, data-free, from generation $k$'s own field. Every generation is evaluated against the original generation-0 oracle. A \emph{contaminated} variant replaces teacher $B$ with a memorization-regime teacher $B_{\mathrm{mem}}$ (trained without denoising; fragmented, weakly convergent field) to test whether the channel is selective.
+
+\section{Experiments}
+
+All experiments use MLX on a single Apple laptop; the full suite (both 2D studies, both sweeps, the MNIST tier, and the composition/lineage study) completes in roughly twenty-two minutes of wall-clock time ($\approx$1{,}300 seconds summed over all stages). Teachers are trained with a fixed seed; student seed counts are stated per experiment, and tables report means over student seeds. Code, JSON run records for every number reported, and the scripts generating every figure are released with the paper.
+
+\subsection{Law 1: the field is a sufficient training signal}
+\label{sec:exp2d}
+
+\paragraph{Setup.} The world is a mixture of four Gaussian blobs on a ring in $\mathbb{R}^2$, lifted by a fixed nonlinear map to $\mathbb{R}^{16}$ (2{,}000 training and 400 held-out points). All models are MLP autoencoders $16{\to}64{\to}64{\to}2{\to}64{\to}64{\to}16$ with GELU activations; the two-dimensional latent space permits dense evaluation on a $40{\times}40$ grid. The teacher is a denoising autoencoder (input noise $0.1$): seven attractors, convergence fraction $1.00$, self-agreement ceiling $0.99$. Six student arms, 4{,}000 steps, three seeds:
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+Arm & Objective & Sees data? \\
+\midrule
+A1 \texttt{field} & Eq.~\eqref{eq:vf}, $z \sim \mathrm{Uniform}(\text{box})$ & no \\
+A2 \texttt{fieldk} & $k$-step matching, $K{=}\{1,2,4,8,16\}$ & no \\
+A+ \texttt{fieldplus} & A2 $+\; 0.2\cdot$ reconstruction on a $5\%$ anchor & $5\%$ \\
+B0 \texttt{scratch} & reconstruction & yes \\
+B1 \texttt{outdistill} & $\|s(x) - t(x)\|^2$ & yes \\
+B2 \texttt{latmatch} & $\|\enc_s(x) - \enc_t(x)\|^2 +$ reconstruction & yes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Law 1 (controlled 2D study): mean over three student seeds. Basin tolerance $\varepsilon = 0.3$; ceiling $0.99$; teacher convergence fraction $1.00$. Data-free arms are not expected to reconstruct (unconstrained data-space chart).}
+\label{tab:2d}
+\begin{tabular}{lccccc}
+\toprule
+Arm & Basin agr. & Field cos. & Field NMSE & Attractor Chamfer & Recon.\\
+\midrule
+A1 field (data-free)        & \textbf{0.86} & 1.00 & 0.0003 & \textbf{0.27} & 0.57 \\
+A2 fieldk (data-free)       & 0.72 & 1.00 & 0.0012 & 0.36 & 0.57 \\
+A+ fieldplus ($5\%$ anchor) & 0.65 & 1.00 & 0.0012 & 0.41 & 0.0067 \\
+B0 scratch                  & 0.00 & 0.04 & 1.01 & 2.08 & 0.0000 \\
+B1 output distillation      & 0.53 & 0.92 & 0.22 & 0.49 & 0.0003 \\
+B2 latent matching          & 0.15 & 0.19 & 1.09 & 0.64 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/field_panels.png}
+  \caption{Teacher field and student fields in teacher coordinates (seed 1). Black stars: teacher attractors; red circles: student attractors. Field-distilled students reproduce the field and place attractors on the teacher's; the scratch baseline bears no relation to the teacher; output distillation is partial; latent matching scatters.}
+  \label{fig:panels}
+\end{figure}
+
+\paragraph{Results.} Table~\ref{tab:2d} and Figure~\ref{fig:panels}. The data-free field-distilled student matches the teacher's field almost exactly (cosine $1.00$, NMSE $3{\times}10^{-4}$) and reproduces emergent quantities it was never directly supervised on: attractors coincide with the teacher's (Chamfer $0.27$ against a merge radius of $0.15$) and $86\%$ of random probes iterate to the teacher's endpoint. The kill switch does not fire. Training from scratch on the same data yields an unrelated field ($0.00$)---the field is a property of the individual trained network, not of the task. Static latent matching transfers almost none of the off-manifold field ($0.15$). Output distillation is the strongest conventional baseline ($0.53$)---cloning the composite map's behavior on data transfers part of the dynamics, whereas matching static features does not---but it falls $0.33$ short of explicit field matching, with more than double the seed-to-seed standard deviation ($0.17$ versus $0.07$).
+
+\paragraph{The teacher's regime is a prerequisite.} An earlier run of the identical protocol with a non-denoising teacher (memorization regime: 26 fragmented attractors; only $75\%$ of probes converge) produced basin agreement of only $0.26$ for the field arm \emph{despite} field cosine $0.97$: per-step errors compound along slow manifolds, and endpoint metrics additionally become ill posed. This motivated the regime study below. The multi-step objective (A2), constructed to counteract exactly this compounding, did not help in either regime ($0.72$ versus $0.86$ contractive; $0.13$ versus $0.26$ memorizing): per-step precision, not horizon supervision, is the binding constraint.
+
+\subsection{Law 2: copyability across training regimes}
+\label{sec:sweep}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Law 2 (regime sweep; two student seeds per level). ``Robustness'' is the teacher's reconstruction error on noise-perturbed held-out inputs (lower is better). Copyability is the basin agreement of the data-free field-distilled student.}
+\label{tab:sweep}
+\begin{tabular}{cccccc}
+\toprule
+Teacher noise & Attractors & Conv.\ frac. & Ceiling & Copyability & Robustness \\
+\midrule
+0.00 & 13 & 0.60 & 0.96 & $0.57 \pm 0.17$ & 0.0019 \\
+0.01 & 28 & 0.78 & 0.95 & $0.41 \pm 0.09$ & 0.0017 \\
+0.02 & 11 & 0.63 & 0.97 & $0.34 \pm 0.25$ & 0.0016 \\
+0.05 & 3  & 1.00 & 0.99 & $0.69 \pm 0.00$ & 0.0013 \\
+0.08 & 4  & 1.00 & 0.99 & $0.66 \pm 0.14$ & 0.0012 \\
+0.10 & 7  & 1.00 & 0.99 & $0.81 \pm 0.03$ & 0.0012 \\
+0.15 & 4  & 1.00 & 0.99 & $\mathbf{0.99 \pm 0.00}$ & 0.0013 \\
+0.20 & 4  & 1.00 & 0.99 & $\mathbf{0.99 \pm 0.00}$ & 0.0017 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/sweep.png}
+  \caption{Copyability versus teacher regime. Left: copyability, self-agreement ceiling, and convergence fraction versus denoising noise. Center: attractor consolidation and off-manifold robustness. Right: normalized copyability against off-manifold error is not monotone, falsifying the strong ``copyability equals test robustness'' hypothesis.}
+  \label{fig:sweep}
+\end{figure}
+
+Repeating the field-distillation arm against teachers trained at denoising levels $\sigma \in [0, 0.2]$ (Table~\ref{tab:sweep}, Figure~\ref{fig:sweep}) reveals two phases. For $\sigma \leq 0.02$ (memorization regime) copyability is low \emph{and unstable}: means $0.34$--$0.57$, seed standard deviations up to $\pm 0.25$. For $\sigma \geq 0.05$ (contractive regime) it rises monotonically and saturates at $0.99$ with zero observed variance. Low-mean/high-variance on one side, saturated/deterministic on the other: the signature of an order parameter across a phase boundary. Our stronger prior hypothesis---copyability tracks generalization as measured by off-manifold robustness---is \textbf{falsified} by the same data: robustness is optimal near $\sigma \approx 0.08$--$0.10$ and \emph{degrades} at $\sigma = 0.2$ while copyability continues to rise (Figure~\ref{fig:sweep}, right). Copyability tracks the \emph{dynamical order} of the source, not its test metrics.
+
+\subsection{Law 2, localized: reliability is the discontinuous quantity}
+\label{sec:transition}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/transition.png}
+  \caption{Dense sweep across the transition (three student seeds per level; individual seeds as scatter). Left: teacher convergence snaps from $0.71$ to $1.00$ between $\sigma = 0.045$ and $0.05$; the spread of copyability collapses at the same level. Right: the attractor-detachment statistic is confounded in this dense-data world (see text).}
+  \label{fig:transition}
+\end{figure}
+
+A dense sweep ($\sigma \in \{0, 0.01, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.06, 0.08\}$, three seeds per level; Figure~\ref{fig:transition}) localizes the transition. The teacher's convergence fraction fluctuates in $[0.59, 0.78]$ for all $\sigma \leq 0.045$ and snaps to $1.00$ at $\sigma = 0.05$; at exactly that level the seed spread of copyability collapses (individual seeds span $0.09$--$0.75$ below; $0.690, 0.685, 0.685$ at $0.05$). The \emph{mean} is continuous through the transition ($0.61 \to 0.69 \to 0.80$); the \emph{reliability} is discontinuous. Transmission of dynamics becomes deterministic exactly when the source's field becomes fully convergent. Two qualifications: attractor count is a poor observable near the transition (fluctuating between 1 and 28 with no trend), and our attempt to anchor the transition to the memorization signature of \citet{fumero2025}---attractors detaching from training encodings---is confounded in this dense-data world (with 500 points per class, ``on a memorized point'' and ``at a prototype'' are geometrically indistinguishable; the statistic peaks mid-transition, $0.70$ at $\sigma = 0.025$). Discriminating the two requires sparse data; we report the attempt for completeness.
+
+\subsection{Law 3, first face: dimension inflates the residual (MNIST)}
+\label{sec:mnist}
+
+\begin{table}[t]
+\centering
+\small
+\caption{MNIST tier (latent 16; two student seeds). Teacher: denoising $\sigma = 0.3$, 18 attractors, convergence $0.97$, ceiling $0.71$, basin tolerance $2.19$ at latent scale $5.49$. ``---'': no student attractor converged below tolerance. \texttt{fieldtraj} is the $K = \{1,2,8\}$ trajectory variant.}
+\label{tab:mnist}
+\begin{tabular}{lccccc}
+\toprule
+Arm & Basin agr. & Field cos. & Field NMSE & Chamfer / scale & Recon.\\
+\midrule
+field (data-free)      & 0.09 & \textbf{0.91} & \textbf{0.049} & --- & 0.106 \\
+fieldtraj (data-free)  & 0.01 & 0.90 & 0.068 & --- & 0.105 \\
+fieldplus ($5\%$ anchor) & 0.07 & \textbf{0.91} & \textbf{0.049} & \textbf{0.87} & 0.033 \\
+scratch                & 0.00 & 0.50 & 1.78 & 1.52 & 0.015 \\
+output distillation    & \textbf{0.19} & 0.70 & 0.67 & 1.08 & 0.016 \\
+latent matching        & 0.00 & 0.63 & 0.39 & 1.53 & 0.014 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/mnist_attractors.png}
+  \caption{Teacher attractors on MNIST decode to crisp digit prototypes (top row), reproducing the memories-as-attractors phenomenon of \citet{fumero2025} at this scale. The anchored student's decodes of the same latent points (bottom row) are only faintly digit-like: a $5\%$ anchor under-constrains the student's decoder.}
+  \label{fig:mnist}
+\end{figure}
+
+\paragraph{Setup.} Autoencoders $784{\to}256{\to}128{\to}16{\to}128{\to}256{\to}784$ on 8{,}000 MNIST images; denoising teacher ($\sigma = 0.3$, selected from $\{0.2, 0.3, 0.4, 0.5\}$). At 16 latent dimensions the field cannot be evaluated on a grid; field arms sample $z$ from a Gaussian fitted to the teacher's latent moments (a 32-number summary---a disclosed, calibration-level use of data statistics) mixed with teacher-trajectory points; 12{,}000 steps with cosine decay. Endpoints were additionally compared through the teacher's decoder in pixel space; the decoded metric agreed with the latent metric everywhere.
+
+\paragraph{Results.} The \emph{ordering} of methods survives dimensionality---field distillation attains cosine $0.91$ (no baseline exceeds $0.75$) and the anchored variant recovers the attractor set best (Chamfer $0.87$ of latent scale)---and the teacher-side phenomenon reproduces (Figure~\ref{fig:mnist}). But basin-level agreement fails for \emph{every} method: the best value ($0.19$, output distillation) is at $27\%$ of the $0.71$ ceiling. The cause is quantified, not speculative: the field residual plateaus at $\mathrm{NMSE} = 0.049$, a per-step displacement error of $\approx 0.75$ latent units ($14\%$ of the latent scale)---two orders of magnitude worse, relative to scale, than the 2D study---which compounds over hundreds of iterations into median endpoint displacements of $2.5$--$5.8$ latent units against a basin tolerance of $2.19$. Three mitigations failed to close the gap: quadrupled training with decay (NMSE $0.086 \to 0.049$ only), trajectory-concentrated sampling, and trajectory-level supervision (\texttt{fieldtraj}, \emph{worse}---the third failure of multi-step matching in this paper). We also note that no MNIST teacher we trained exceeded a self-agreement ceiling of $0.72$ at any denoising level tried (ceilings $0.51$--$0.72$, attractor counts 18--58), so by Law 2 unreliable copying is expected here independent of the optimization difficulty.
+
+\subsection{Laws 3--5: composition, inheritance, and selection}
+\label{sec:gi}
+
+\paragraph{Setup.} Eight blobs on a ring (16D lift as before). Teacher $A$ is trained on blobs 0--3, teacher $B$ on blobs 4--7 (denoising $\sigma = 0.1$, contractive); $B_{\mathrm{mem}}$ is a memorization-regime teacher (no denoising) on blobs 4--7. Union frames, gated fields, oracles, and lineages follow Section~\ref{sec:union}; students distill data-free for 8{,}000 steps. Five gates were fixed in the harness docstring before running: C1 union (joint $\geq 0.60$, per-side drop vs.\ single-teacher students $\leq 0.15$); K3 kill switch (merged output distillation within $0.05$); C3 exceedance ($\geq 7$ of 8 sites in one student); C4 lineage (generation-5 joint $\geq 0.85 \times$ generation-1); C2 filter (ordered graft persists; disordered graft $\leq 0.30$ by generation 3 with its ordered neighbor retained). All five passed.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Composition (isometric union frame unless noted; oracle ceilings: joint $0.98$, $A$-side $0.99$, $B$-side $0.97$; 9 oracle attractors, one a gate-seam artifact). Sites = oracle attractor sites recovered by the best seed.}
+\label{tab:gi}
+\begin{tabular}{lcccc}
+\toprule
+Arm & Joint & $A$-side & $B$-side & Sites \\
+\midrule
+union-field (data-free, 5 seeds)     & \textbf{0.82} & 0.90 & 0.75 & \textbf{8/9} \\
+single-$A$ field (reference)         & ---  & 0.99 & ---  & --- \\
+single-$B$ conjugated field (reference) & --- & --- & 0.81 & --- \\
+merged output distillation (2 seeds) & 0.13 & 0.27 & \textbf{0.00} & --- \\
+union-field, \emph{fitted} graft (hard mode, 1 seed) & 0.50 & 0.78 & 0.14 & 5/10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/gi.png}
+  \caption{Composition and inheritance. Left: the union field with the student's attractors (red) on the oracle's (black)---one data-free student holding two disjoint teachers' knowledge. Center: five generations of data-free re-distillation; curves are flat, not photocopy decay. Right: the selection effect---the ordered native side rides at $0.89$--$1.00$ for five generations while the memorization-regime graft never exceeds $0.24$; the clean ordered graft (blue) persists in the same slot.}
+  \label{fig:gi}
+\end{figure}
+
+\paragraph{Composition (Law 4).} Table~\ref{tab:gi}. The union student holds both knowledge sets: joint $0.82$ over five seeds (range $0.77$--$0.91$; ceiling $0.98$), per-side costs relative to single-teacher references of $0.10$ ($A$) and $0.06$ ($B$), and up to 8 of 9 oracle attractor sites in one network---no ancestor was trained on more than half the world. Merged output distillation, given \emph{pooled data} the union student never sees, scores $0.13$ with the grafted side at exactly $0.00$ in both seeds: behavioral cloning has no mechanism for placing disjoint knowledge in one representation. The composition kill switch clears by $0.69$.
+
+\paragraph{The frame must be designed (Law 3, second face).} Grafting $B$'s knowledge where $A$'s encoder places $B$'s inputs---the input-consistent choice---destroys it: the fitted-graft union student reaches only $0.14$ on the grafted side (and $0.50$ joint), because $A$'s out-of-distribution chart compresses foreign territory (graft--native centroid separation $0.73$, versus $2.63$ under the designed frame), shrinking the local basin scale below the achievable field resolution. The identical knowledge grafted isometrically into empty frame territory transmits at $0.75$--$0.84$. This is the same inequality that fails on MNIST, violated from the opposite side: there the residual grows; here the basin scale shrinks. Practically: a union frame is a designed object, owned by no ancestor; alignment to any single model's chart is the wrong abstraction.
+
+\paragraph{Inheritance (Law 5) and selection.} Five generations of data-free re-distillation from the best union seed retain the knowledge essentially undegraded: joint $0.91 \to 0.84 \to 0.85 \to 0.84 \to 0.83$ (a $91\%$ retention ratio against the $0.85$ gate), with the native side pinned at $0.96$--$0.99$, the ordered graft easing $0.84 \to 0.70$, and attractor counts stable at 7--10. The channel is not a photocopier. It is also selective: in the contaminated lineage, the memorization-regime graft enters at $0.24$ and never recovers ($0.12$--$0.19$ across generations) while the ordered native side rides at $0.89$--$1.00$ beside it for all five generations; the clean lineage's ordered graft, in the same slot, persists at $0.70$--$0.73$. Disordered structure is not merely copied poorly---it cannot board the lineage at all. In a preliminary half-budget run we additionally observed a \emph{ratchet}: a weak ancestor's grafted side improved from $0.22$ to $0.71$ under re-distillation before stabilizing (recorded in the released logs).
+
+\paragraph{Reliability is budget-dependent.} At 4{,}000 training steps, union-student seeds spanned $0.35$--$0.77$; doubling to 8{,}000 collapsed the spread to $0.77$--$0.91$. The union target---two structured territories and a gate seam---is a harder regression landscape, and the seam is where residual basin losses concentrate; reliability behaves as a budget knob, echoing Law 2 at the composition level.
+
+\paragraph{Caveats.} Lineage chains use one seed per generation, and the clean lineage's ancestor is the best of five seeds (a disclosed selection); the clean-graft persistence criterion is met with little slack ($0.70$ against a $0.67$ threshold); the ninth oracle attractor is a seam artifact; the hard gate discontinuity is smoothed by students. All results in this section are two-dimensional.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{One inequality explains both failures.} The two negative results in this paper---MNIST basin-level failure and the fitted-graft failure---are the same law violated from opposite sides. Define $\rho$ as the ratio of the achievable per-step field residual to the local basin scale; faithful transmission of long-run dynamics requires $\rho \ll 1$. On MNIST, dimension inflates the numerator (residual $14\%$ of latent scale, versus $0.005\%$ at 2D). In the fitted graft, chart compression shrinks the denominator (foreign territory compressed roughly $3.6\times$ tighter than under the designed frame). A framing that accounts for its own failures with the machinery of its successes is, we believe, the strongest evidence that the field-as-channel abstraction is the right one.
+
+\begin{table}[t]
+\centering
+\small
+\caption{The five laws: demonstrated scope versus conjectured scope. Every conjecture is falsifiable with the released harness plus scale.}
+\label{tab:laws}
+\begin{tabular}{p{2.4cm}p{5.7cm}p{5.9cm}}
+\toprule
+Law & Demonstrated (this paper) & Conjectured scope \\
+\midrule
+1. Sufficiency & 2D AE: $0.86$ vs.\ $0.53$/$0.15$ baselines, data-free & any re-encoding system with a convergent field; knowledge transfer where data cannot move \\
+2. Order & reliability discontinuous at full convergence ($\pm0.25 \to \pm0.00$ at $\sigma \approx 0.05$) & a data-free diagnostic of the memorization--generalization boundary \\
+3. Resolution & $\rho \ll 1$ violated by dimension (MNIST) and by chart compression (fitted graft) & the governing constraint for scaling and for frame design \\
+4. Composition & union $0.82$ vs.\ behavioral merging $0.13$ & multi-model merging via designed (ultimately nonlinear, learned) frames \\
+5. Heredity + selection & 5 generations at $91\%$ retention; memorized structure excluded & model lineages that accumulate general structure and shed run-specific accident \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{What the results establish.} Within the controlled setting: the latent vector field is a sufficient, data-free carrier of a network's learned structure, and this information is demonstrably absent from the standard distillation channels (Table~\ref{tab:2d}); its transmissibility is an intrinsic property of the source with a sharp reliability transition at the source's dynamical ordering (Table~\ref{tab:sweep}); fields from disjoint sources compose in one student under a designed frame, which no behavioral channel achieves (Table~\ref{tab:gi}); and the composed knowledge survives generational re-transmission while memorization-regime structure is excluded from the lineage (Figure~\ref{fig:gi}). Table~\ref{tab:laws} states each law at its demonstrated scope alongside its falsifiable general form.
+
+\paragraph{What they do not establish.} All positive results are at laptop scale with two-dimensional latent spaces where the field can be densely sampled; the MNIST tier shows the naive objective does not deliver basin-level fidelity at 16 latent dimensions, and every operation in Section~\ref{sec:gi} inherits that wall. Nothing here concerns reasoning, agency, or capability gain: the union student knows the union of its ancestors' knowledge and nothing more; the lineage accumulates and purifies but does not discover. The falsified robustness hypothesis cautions against reading copyability as a general measure of model quality: it measures dynamical order. ``Inheritance'' and ``selection'' are used in the operational senses defined by the gates of Section~\ref{sec:gi}.
+
+\paragraph{Methodological limitations.}
+\label{sec:limitations}
+Seed counts are small throughout (two to five student seeds; one teacher seed per condition; one seed per lineage generation, with a disclosed best-of-five ancestor selection). The alignment protocol is affine-only and may under-credit baselines whose charts differ nonlinearly from the teacher's, though it is applied best-case for every arm. Endpoint-based basin metrics are partially ill posed when the source's field does not fully converge; convergence fractions and ceilings are reported throughout. The attractor-detachment analysis is confounded by data density and inconclusive as reported. The MNIST sampling prior uses the teacher's latent moments (32 numbers, disclosed). The union gate is a hard partition and its seam concentrates the residual losses.
+
+\paragraph{Outlook.} The five laws define a program with one named blocker. If per-step residuals can be driven to $\rho \ll 1$ at scale---candidate attacks: importance-weighted near-attractor sampling, contraction-aware and spectral penalties on the student, coarse-to-fine field curricula---then the demonstrated operations become practical: knowledge transfer when data cannot be shared, model merging as field union under learned nonlinear frames, and lineages that accumulate the transmissible (general) core of many specialists while mechanically shedding what was memorized. Nearer-term: sparse-data worlds to unconfound the detachment signature; teacher-seed ensembles at the transition; frame design as an optimization problem in its own right; and porting the channel machinery to systems whose fields are trained rather than emergent \citep{ho2020ddpm,song2021score}, including recurrent-depth models whose step displacements are already measured \citep{pappone2025}.
+
+\section{Conclusion}
+
+We proposed treating a neural network's learned knowledge as its latent iteration dynamics, and characterized the displacement field $\Vfield(z) = \enc(\dec(z)) - z$ as a transmission channel. Five pre-registered, laptop-scale experiments yield five regularities: the field alone suffices to transfer an attractor landscape without data; transmissibility is an order parameter of the source, with reliability changing discontinuously at full convergence; fidelity is governed by a single resolution inequality that explains both of our negative results; fields from disjoint specialists compose in a designed common frame, where behavioral merging fails entirely; and the composed knowledge is heritable across generations of data-free re-distillation, with memorization-regime structure mechanically excluded from the lineage. The latent vector field, so far an analysis tool, is a channel: it can teach, it can merge, and it can inherit. Making $\rho \ll 1$ hold at scale is now the single, well-specified gate between these demonstrations and practice.
+
+\subsection*{Reproducibility}
+
+All experiments were implemented in MLX and run on a single Apple M-series laptop; the complete suite (controlled study, both sweeps, the MNIST tier, and the composition/lineage study) executes in roughly twenty-two minutes of wall-clock time ($\approx$1{,}300 seconds summed over all stages). The released harness contains one module per experiment with fixed seeds, JSON run records for every number reported here, and the scripts that generate every figure.
+
+\begin{thebibliography}{99}
+
+\bibitem[Fumero et al.(2025)]{fumero2025}
+M.~Fumero, L.~Moschella, E.~Rodol\`a, and F.~Locatello.
+\newblock Navigating the latent space dynamics of neural models.
+\newblock \emph{arXiv preprint arXiv:2505.22785}, 2025.
+
+\bibitem[Hinton et al.(2015)]{hinton2015}
+G.~Hinton, O.~Vinyals, and J.~Dean.
+\newblock Distilling the knowledge in a neural network.
+\newblock \emph{arXiv preprint arXiv:1503.02531}, 2015.
+
+\bibitem[Ho et al.(2020)]{ho2020ddpm}
+J.~Ho, A.~Jain, and P.~Abbeel.
+\newblock Denoising diffusion probabilistic models.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2020.
+
+\bibitem[Romero et al.(2015)]{romero2015fitnets}
+A.~Romero, N.~Ballas, S.~E. Kahou, A.~Chassang, C.~Gatta, and Y.~Bengio.
+\newblock FitNets: Hints for thin deep nets.
+\newblock In \emph{International Conference on Learning Representations}, 2015.
+
+\bibitem[Park et al.(2019)]{park2019rkd}
+W.~Park, D.~Kim, Y.~Lu, and M.~Cho.
+\newblock Relational knowledge distillation.
+\newblock In \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition}, 2019. arXiv:1904.05068.
+
+\bibitem[Pappone et al.(2025)]{pappone2025}
+F.~Pappone, D.~Crisostomi, and E.~Rodol\`a.
+\newblock Two-scale latent dynamics for recurrent-depth transformers.
+\newblock \emph{arXiv preprint arXiv:2509.23314}, 2025.
+
+\bibitem[Song et al.(2021)]{song2021score}
+Y.~Song, J.~Sohl-Dickstein, D.~P. Kingma, A.~Kumar, S.~Ermon, and B.~Poole.
+\newblock Score-based generative modeling through stochastic differential equations.
+\newblock In \emph{International Conference on Learning Representations}, 2021.
+
+\bibitem[Srinivas and Fleuret(2018)]{srinivas2018jacobian}
+S.~Srinivas and F.~Fleuret.
+\newblock Knowledge transfer with Jacobian matching.
+\newblock In \emph{International Conference on Machine Learning}, 2018. arXiv:1803.00443.
+
+\bibitem[Tian et al.(2020)]{tian2020crd}
+Y.~Tian, D.~Krishnan, and P.~Isola.
+\newblock Contrastive representation distillation.
+\newblock In \emph{International Conference on Learning Representations}, 2020. arXiv:1910.10699.
+
+\bibitem[Tung and Mori(2019)]{tung2019similarity}
+F.~Tung and G.~Mori.
+\newblock Similarity-preserving knowledge distillation.
+\newblock In \emph{IEEE/CVF International Conference on Computer Vision}, 2019.
+
+\bibitem[MEDAL(2026)]{medal2026}
+MEDAL: Manifold embedding distillation via autoencoder learning.
+\newblock \emph{arXiv preprint arXiv:2605.24244}, 2026.
+
+\bibitem[Distilling Latent Manifolds(2026)]{latentmanifolds2026}
+Distilling latent manifolds: Resolution extrapolation by variational autoencoders.
+\newblock \emph{arXiv preprint arXiv:2603.14536}, 2026.
+
+\end{thebibliography}
+
+\end{document}

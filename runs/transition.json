@@ -1,0 +1,167 @@
+[
+  {
+    "noise": 0.0,
+    "n_attractors": 13,
+    "conv_frac": 0.595625,
+    "self_agree": 0.96,
+    "mem_attach": 0.07180219888687134,
+    "proto_dist": 0.7174966931343079,
+    "copy_seeds": [
+      0.75,
+      0.4,
+      0.6775
+    ],
+    "copy_mean": 0.6091666666666666,
+    "copy_std": 0.15083563534154948
+  },
+  {
+    "noise": 0.01,
+    "n_attractors": 28,
+    "conv_frac": 0.78375,
+    "self_agree": 0.95,
+    "mem_attach": 0.12417470663785934,
+    "proto_dist": 0.7594811916351318,
+    "copy_seeds": [
+      0.3125,
+      0.4975,
+      0.3075
+    ],
+    "copy_mean": 0.37250000000000005,
+    "copy_std": 0.08841191473249896
+  },
+  {
+    "noise": 0.02,
+    "n_attractors": 11,
+    "conv_frac": 0.628125,
+    "self_agree": 0.97,
+    "mem_attach": 0.23749913275241852,
+    "proto_dist": 0.9667232036590576,
+    "copy_seeds": [
+      0.5825,
+      0.09,
+      0.5275
+    ],
+    "copy_mean": 0.39999999999999997,
+    "copy_std": 0.2203501002193252
+  },
+  {
+    "noise": 0.025,
+    "n_attractors": 4,
+    "conv_frac": 0.726875,
+    "self_agree": 0.9925,
+    "mem_attach": 0.699102520942688,
+    "proto_dist": 1.3240025043487549,
+    "copy_seeds": [
+      0.4675,
+      0.1775,
+      0.3725
+    ],
+    "copy_mean": 0.33916666666666667,
+    "copy_std": 0.12071545974821214
+  },
+  {
+    "noise": 0.03,
+    "n_attractors": 8,
+    "conv_frac": 0.59125,
+    "self_agree": 0.995,
+    "mem_attach": 0.2949082851409912,
+    "proto_dist": 1.0245170593261719,
+    "copy_seeds": [
+      0.505,
+      0.41,
+      0.15
+    ],
+    "copy_mean": 0.355,
+    "copy_std": 0.15005554527129836
+  },
+  {
+    "noise": 0.035,
+    "n_attractors": 2,
+    "conv_frac": 0.630625,
+    "self_agree": 0.995,
+    "mem_attach": 0.23375952243804932,
+    "proto_dist": 0.9297271370887756,
+    "copy_seeds": [
+      0.4875,
+      0.7225,
+      0.475
+    ],
+    "copy_mean": 0.5616666666666666,
+    "copy_std": 0.11384077574499493
+  },
+  {
+    "noise": 0.04,
+    "n_attractors": 3,
+    "conv_frac": 0.651875,
+    "self_agree": 0.985,
+    "mem_attach": 0.03102881833910942,
+    "proto_dist": 0.6038407683372498,
+    "copy_seeds": [
+      0.595,
+      0.5625,
+      0.6125
+    ],
+    "copy_mean": 0.59,
+    "copy_std": 0.020716338157760104
+  },
+  {
+    "noise": 0.045,
+    "n_attractors": 1,
+    "conv_frac": 0.714375,
+    "self_agree": 0.995,
+    "mem_attach": 0.2748402953147888,
+    "proto_dist": 0.7994195818901062,
+    "copy_seeds": [
+      0.685,
+      0.455,
+      0.695
+    ],
+    "copy_mean": 0.6116666666666667,
+    "copy_std": 0.1108552609887726
+  },
+  {
+    "noise": 0.05,
+    "n_attractors": 3,
+    "conv_frac": 1.0,
+    "self_agree": 0.9925,
+    "mem_attach": 0.20050230622291565,
+    "proto_dist": 0.9706665873527527,
+    "copy_seeds": [
+      0.69,
+      0.685,
+      0.685
+    ],
+    "copy_mean": 0.6866666666666666,
+    "copy_std": 0.002357022603955108
+  },
+  {
+    "noise": 0.06,
+    "n_attractors": 9,
+    "conv_frac": 1.0,
+    "self_agree": 0.9825,
+    "mem_attach": 0.033652786165475845,
+    "proto_dist": 0.7002307772636414,
+    "copy_seeds": [
+      0.8325,
+      0.7425,
+      0.825
+    ],
+    "copy_mean": 0.8000000000000002,
+    "copy_std": 0.0407737660757502
+  },
+  {
+    "noise": 0.08,
+    "n_attractors": 4,
+    "conv_frac": 1.0,
+    "self_agree": 0.99,
+    "mem_attach": 0.018704459071159363,
+    "proto_dist": 0.5934982299804688,
+    "copy_seeds": [
+      0.8,
+      0.525,
+      0.7725
+    ],
+    "copy_mean": 0.6991666666666667,
+    "copy_std": 0.12366509432962704
+  }
+]

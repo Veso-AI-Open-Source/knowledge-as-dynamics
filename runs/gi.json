@@ -1,0 +1,220 @@
+{
+  "fit_mode": {
+    "align_resid": 0.12293840171913642,
+    "collision": 0.7336058616638184,
+    "student": {
+      "basin_joint": 0.5,
+      "basin_A": 0.775330396475771,
+      "basin_B": 0.13872832369942195,
+      "chamfer": 0.3185354471206665,
+      "n_attractors": 6,
+      "sites_recovered": 5,
+      "sites_total": 10
+    }
+  },
+  "frame": {
+    "align_resid": 0.0,
+    "collision": 2.629021167755127,
+    "n_attractors": 9,
+    "ceil_joint": 0.9825,
+    "ceil_A": 0.9946524064171123,
+    "ceil_B": 0.971830985915493
+  },
+  "frame_c": {
+    "align_resid": 0.0,
+    "n_attractors": 22,
+    "ceil_joint": 0.975,
+    "ceil_A": 0.9900497512437811,
+    "ceil_B": 0.9597989949748744
+  },
+  "union": [
+    {
+      "basin_joint": 0.82,
+      "basin_A": 0.9144385026737968,
+      "basin_B": 0.7370892018779343,
+      "chamfer": 0.29425472021102905,
+      "n_attractors": 8,
+      "sites_recovered": 7,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.775,
+      "basin_A": 0.8288770053475936,
+      "basin_B": 0.7276995305164319,
+      "chamfer": 0.34792840480804443,
+      "n_attractors": 7,
+      "sites_recovered": 5,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.8225,
+      "basin_A": 0.9358288770053476,
+      "basin_B": 0.7230046948356808,
+      "chamfer": 0.2998189330101013,
+      "n_attractors": 8,
+      "sites_recovered": 7,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.7725,
+      "basin_A": 0.8181818181818182,
+      "basin_B": 0.7323943661971831,
+      "chamfer": 0.47851109504699707,
+      "n_attractors": 6,
+      "sites_recovered": 5,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.905,
+      "basin_A": 0.9786096256684492,
+      "basin_B": 0.8403755868544601,
+      "chamfer": 0.21161861717700958,
+      "n_attractors": 10,
+      "sites_recovered": 8,
+      "sites_total": 9
+    }
+  ],
+  "single_A": {
+    "basin_joint": 0.465,
+    "basin_A": 0.9946524064171123,
+    "basin_B": 0.0,
+    "chamfer": 1.1343324184417725,
+    "n_attractors": 5,
+    "sites_recovered": 4,
+    "sites_total": 9
+  },
+  "single_B": {
+    "basin_joint": 0.4325,
+    "basin_A": 0.0,
+    "basin_B": 0.812206572769953,
+    "chamfer": 1.0237663984298706,
+    "n_attractors": 7,
+    "sites_recovered": 4,
+    "sites_total": 9
+  },
+  "merged_outdistill": [
+    {
+      "basin_joint": 0.07,
+      "basin_A": 0.1497326203208556,
+      "basin_B": 0.0,
+      "chamfer": 1.4072614908218384,
+      "n_attractors": 7,
+      "sites_recovered": 1,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.185,
+      "basin_A": 0.39572192513368987,
+      "basin_B": 0.0,
+      "chamfer": 1.2545340061187744,
+      "n_attractors": 7,
+      "sites_recovered": 2,
+      "sites_total": 9
+    }
+  ],
+  "lineage_clean": [
+    {
+      "basin_joint": 0.905,
+      "basin_A": 0.9786096256684492,
+      "basin_B": 0.8403755868544601,
+      "chamfer": 0.21161861717700958,
+      "n_attractors": 10,
+      "sites_recovered": 8,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.84,
+      "basin_A": 0.9625668449197861,
+      "basin_B": 0.7323943661971831,
+      "chamfer": 0.30577534437179565,
+      "n_attractors": 8,
+      "sites_recovered": 7,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.85,
+      "basin_A": 0.9893048128342246,
+      "basin_B": 0.7276995305164319,
+      "chamfer": 0.3779473900794983,
+      "n_attractors": 8,
+      "sites_recovered": 6,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.845,
+      "basin_A": 0.983957219251337,
+      "basin_B": 0.7230046948356808,
+      "chamfer": 0.35353344678878784,
+      "n_attractors": 9,
+      "sites_recovered": 7,
+      "sites_total": 9
+    },
+    {
+      "basin_joint": 0.8275,
+      "basin_A": 0.9732620320855615,
+      "basin_B": 0.6995305164319249,
+      "chamfer": 0.414451539516449,
+      "n_attractors": 7,
+      "sites_recovered": 6,
+      "sites_total": 9
+    }
+  ],
+  "lineage_contaminated": [
+    {
+      "basin_joint": 0.565,
+      "basin_A": 0.8905472636815921,
+      "basin_B": 0.23618090452261306,
+      "chamfer": 0.5521506667137146,
+      "n_attractors": 11,
+      "sites_recovered": 9,
+      "sites_total": 22
+    },
+    {
+      "basin_joint": 0.535,
+      "basin_A": 0.945273631840796,
+      "basin_B": 0.12060301507537688,
+      "chamfer": 1.4643877744674683,
+      "n_attractors": 5,
+      "sites_recovered": 5,
+      "sites_total": 22
+    },
+    {
+      "basin_joint": 0.565,
+      "basin_A": 0.9950248756218906,
+      "basin_B": 0.1306532663316583,
+      "chamfer": 0.7290605306625366,
+      "n_attractors": 6,
+      "sites_recovered": 5,
+      "sites_total": 22
+    },
+    {
+      "basin_joint": 0.5375,
+      "basin_A": 0.900497512437811,
+      "basin_B": 0.1708542713567839,
+      "chamfer": 0.36651062965393066,
+      "n_attractors": 7,
+      "sites_recovered": 11,
+      "sites_total": 22
+    },
+    {
+      "basin_joint": 0.59,
+      "basin_A": 0.9850746268656716,
+      "basin_B": 0.19095477386934673,
+      "chamfer": 1.0223875045776367,
+      "n_attractors": 6,
+      "sites_recovered": 5,
+      "sites_total": 22
+    }
+  ],
+  "gates": {
+    "C1_union": true,
+    "K3_kill": false,
+    "C3_exceedance": true,
+    "C4_lineage": true,
+    "C2_filter": true,
+    "verdict": "GOLDEN GO",
+    "union_joint": 0.819,
+    "merged_joint": 0.1275,
+    "sites": 8
+  }
+}

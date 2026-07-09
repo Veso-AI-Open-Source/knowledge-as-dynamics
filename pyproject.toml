@@ -1,0 +1,17 @@
+[project]
+name = "m5-fielddistill"
+version = "0.1.0"
+description = "Toy-scale MLX go/no-go: can the latent vector field of Enc∘Dec (Fumero et al., arXiv 2505.22785) be distilled teacher→student? Vector-field distillation vs static/behavioral KD baselines."
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "mlx>=0.31.2",
+    "numpy>=2.0",
+    "matplotlib>=3.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/m5_fielddistill"]
