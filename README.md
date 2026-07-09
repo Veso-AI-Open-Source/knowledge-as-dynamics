@@ -89,8 +89,3 @@ uv sync    # mlx, numpy, matplotlib; python 3.11-3.12; no torch needed
   Neural Networks", 13 pp., five-laws structure spanning all five experiments),
   every number traceable to `runs/*.json`; compile with `tectonic main.tex`
   (figures in `paper/figures/`, copied from `runs/`)
-
-## Acknowledgements
-
-Code execution and experiment implementation in this repository were carried out
-with Claude (Anthropic) as the coding agent, under the author's direction.
