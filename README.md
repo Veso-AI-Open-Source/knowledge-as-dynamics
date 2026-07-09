@@ -3,7 +3,7 @@
 Code, run records, figures, and paper source for
 **"Knowledge as Dynamics: Distilling, Composing, and Inheriting the Latent Vector
 Fields of Neural Networks"** (Helou, 2026). Paper PDF: [`paper/main.pdf`](paper/main.pdf).
-arXiv link: coming.
+arXiv link: coming. Repository: `github.com/Veso-AI-Open-Source/knowledge-as-dynamics`.
 
 The harness (internal codename `m5-fielddistill`) tests **vector-field
 distillation**: training a student autoencoder so its latent displacement field
