@@ -20,15 +20,19 @@
 \title{Knowledge as Dynamics: Distilling, Composing, and Inheriting\\the Latent Vector Fields of Neural Networks}
 
 \author{%
-Elias Helou\thanks{Revision v1.1 (July 10, 2026) adds Section~\ref{sec:extval} and restates Laws 3 and 5 (sharpening Law 2), in response to an independent replication and re-diagnosis contributed by Ivan Nemytchenko through the repository's issue tracker. An invitation to join as co-author of subsequent revisions is pending at the time of writing; see the Acknowledgments and the revision note.}\\
+Elias Helou\thanks{Revision v1.1 (July 10, 2026) added Section~\ref{sec:extval} and restated Laws 3 and 5 (sharpening Law 2); v1.2 (July 10, 2026) welcomes Ivan Nemytchenko as co-author. See the contribution statement and the revision note.}\\
 Veso AI\\
-\texttt{elias.helou@veso.ai}\\[1.1em]
-\begin{tikzpicture}[x=0.0075cm,y=0.0075cm]
-\fill[black] (63.02,0.00) -- (30.75,0.00) -- (40.08,27.92) -- (22.39,19.09) -- (0.82,40.66) -- (38.35,60.06) -- (13.87,80.94) -- (25.28,109.22) -- (58.15,81.99) -- (68.49,112.91) -- (98.99,112.91) -- (90.79,87.16) -- (106.09,95.07) -- (128.92,72.25) -- (92.09,53.87) -- (116.53,33.62) -- (104.46,3.69) -- (72.80,30.68) -- (63.02,0.00) -- cycle;
-\end{tikzpicture}
+\texttt{elias.helou@veso.ai}
+\and
+Ivan Nemytchenko\thanks{Entered the project through an independent, from-scratch replication and re-diagnosis of the v1.0 release, filed as repository issue \#1 within a day of publication and validated in Section~\ref{sec:extval}; co-author from v1.2.}\\
+Independent researcher\\
+\texttt{nemytchenko@gmail.com}
 }
 
-\date{July 2026 --- v1.1, revised July 10, 2026}
+\date{July 2026 --- v1.2, revised July 10, 2026\\[1.1em]
+\begin{tikzpicture}[x=0.0075cm,y=0.0075cm]
+\fill[black] (63.02,0.00) -- (30.75,0.00) -- (40.08,27.92) -- (22.39,19.09) -- (0.82,40.66) -- (38.35,60.06) -- (13.87,80.94) -- (25.28,109.22) -- (58.15,81.99) -- (68.49,112.91) -- (98.99,112.91) -- (90.79,87.16) -- (106.09,95.07) -- (128.92,72.25) -- (92.09,53.87) -- (116.53,33.62) -- (104.46,3.69) -- (72.80,30.68) -- (63.02,0.00) -- cycle;
+\end{tikzpicture}}
 
 \begin{document}
 \maketitle
@@ -55,7 +59,7 @@ Our contributions are five empirical regularities---stated here as laws with the
   \item \textbf{Heredity with selection --- restated in v1.1 (Sections~\ref{sec:gi} and~\ref{sec:extval}).} The channel iterates. Five generations of data-free re-distillation retain $91\%$ of the ancestor's joint agreement with stable attractor structure---transmission is not photocopy decay. It also selects: a memorization-regime teacher's structure never enters the SGD-carried lineage ($\leq 0.24$ throughout) while ordered structure rides beside it at $0.89$--$1.00$. v1.1 locates the selection: a lossless read-only carrier holds unions and lineages at its ceiling \emph{and transmits the memorized structure faithfully} ($0.68$, flat over five generations). What is heritable through a lossy parametric carrier at fixed budget is what is general; the field channel itself is nearly lossless and unselective.
 \end{enumerate}
 
-\paragraph{Revision v1.1.} Within a day of the v1.0 release, Ivan Nemytchenko contributed an independent, from-scratch replication and re-diagnosis of these results through the repository's issue tracker.\footnote{\url{https://github.com/Veso-AI-Open-Source/knowledge-as-dynamics/issues/1}; see the Acknowledgments.} Section~\ref{sec:extval} validates its four claims inside the original harness---three are confirmed, one partially---and reports a new experiment the exchange prompted (two-hop distillation). Laws 2, 3 and 5 above are stated in their corrected v1.1 forms; Sections~\ref{sec:mnist} and~\ref{sec:gi} preserve the v1.0 experiments and mark where their original interpretation is superseded.
+\paragraph{Revision v1.1.} Within a day of the v1.0 release, Ivan Nemytchenko---then an outside reader, a co-author from v1.2---contributed an independent, from-scratch replication and re-diagnosis of these results through the repository's issue tracker.\footnote{\url{https://github.com/Veso-AI-Open-Source/knowledge-as-dynamics/issues/1}; see the contribution statement.} Section~\ref{sec:extval} validates its four claims inside the original harness---three are confirmed, one partially---and reports a new experiment the exchange prompted (two-hop distillation). Laws 2, 3 and 5 above are stated in their corrected v1.1 forms; Sections~\ref{sec:mnist} and~\ref{sec:gi} preserve the v1.0 experiments and mark where their original interpretation is superseded.
 
 \section{Related Work}
 \label{sec:related}
@@ -295,7 +299,7 @@ union-field, \emph{fitted} graft (hard mode, 1 seed) & 0.50 & 0.78 & 0.14 & 5/10
 \section{External Validation and Re-diagnosis (v1.1)}
 \label{sec:extval}
 
-Within a day of the v1.0 release, Ivan Nemytchenko reproduced the headline results of Sections~\ref{sec:exp2d} and~\ref{sec:mnist} in a self-contained reimplementation and filed four claims through the repository's issue tracker:\footnote{\url{https://github.com/Veso-AI-Open-Source/knowledge-as-dynamics/issues/1}, July 9--10, 2026.} (i)~the transmission losses of Sections~\ref{sec:mnist}--\ref{sec:gi} belong to the SGD \emph{carrier}, not the field \emph{channel}; (ii)~mean field NMSE anti-correlates with basin transfer---the wrong observable; (iii)~the high-dimensional wall is budgetary, not dimensional; and (iv)~the uncertainty exponent $\alpha$ of the teacher's basin boundaries \citep{grebogi1983,mcdonald1985} is a teacher-only order parameter that predicts the transmission ceiling. This section validates each claim inside the original harness---the same cached teachers, worlds, oracles, and evaluation code behind every number above (module \texttt{extval}; all run records released)---and reports one new experiment the exchange prompted. Claims (i), (ii) and the cost-curve half of (iii) are confirmed; the efficiency half of (iii) partially replicates; (iv) is confirmed on the original teacher (its dimension-scaling extension was reviewed against the contributed run records but not independently re-run).
+Within a day of the v1.0 release, the second author---then an outside reader---reproduced the headline results of Sections~\ref{sec:exp2d} and~\ref{sec:mnist} in a self-contained reimplementation and filed four claims through the repository's issue tracker:\footnote{\url{https://github.com/Veso-AI-Open-Source/knowledge-as-dynamics/issues/1}, July 9--10, 2026.} (i)~the transmission losses of Sections~\ref{sec:mnist}--\ref{sec:gi} belong to the SGD \emph{carrier}, not the field \emph{channel}; (ii)~mean field NMSE anti-correlates with basin transfer---the wrong observable; (iii)~the high-dimensional wall is budgetary, not dimensional; and (iv)~the uncertainty exponent $\alpha$ of the teacher's basin boundaries \citep{grebogi1983,mcdonald1985} is a teacher-only order parameter that predicts the transmission ceiling. This section validates each claim inside the original harness---the same cached teachers, worlds, oracles, and evaluation code behind every number above (module \texttt{extval}; all run records released)---and reports one new experiment the exchange prompted. Claims (i), (ii) and the cost-curve half of (iii) are confirmed; the efficiency half of (iii) partially replicates; (iv) is confirmed on the original teacher (its dimension-scaling extension was reviewed against the contributed run records but not independently re-run).
 
 \subsection{The carrier, not the channel}
 \label{sec:extval-carrier}
@@ -398,9 +402,9 @@ Seed counts are small throughout (two to five student seeds; one teacher seed pe
 
 We proposed treating a neural network's learned knowledge as its latent iteration dynamics, and characterized the displacement field $\Vfield(z) = \enc(\dec(z)) - z$ as a transmission channel. Five pre-registered, laptop-scale experiments yield five regularities: the field alone suffices to transfer an attractor landscape without data; transmissibility is an order parameter of the source, with reliability changing discontinuously at full convergence; basin-level fidelity is governed not by mean field error---an observable that anti-correlates with transfer---but by directional fidelity near basin boundaries, whose fractal dimension sets every carrier's ceiling; fields from disjoint specialists compose in a designed common frame, where behavioral merging fails entirely; and the composed knowledge is heritable across generations of data-free re-distillation, with the selection against memorized structure located in the carrier, not the channel. An independent replication arrived within a day of release; its re-diagnosis is validated in Section~\ref{sec:extval} and incorporated throughout---exactly the correction cycle this paper's release model was designed to invite. The latent vector field, so far an analysis tool, is a channel: it can teach, it can merge, and it can inherit; read-out carriers already cross the high-dimensional wall at sufficient budget, and two-hop distillation shows parametric students can follow. The gate between these demonstrations and practice is now twofold and well-specified: directional accuracy in decision-relevant regions at scale, and the reliability of the parametric carrier.
 
-\subsection*{Acknowledgments}
+\subsection*{Contribution statement}
 
-Revision v1.1 owes its central corrections to \textbf{Ivan Nemytchenko}, who independently reimplemented the harness within a day of the v1.0 release, replicated the headline results, and contributed the re-diagnosis validated in Section~\ref{sec:extval}: that the transmission losses and the selection effect belong to the parametric carrier rather than the field channel, that mean field error is the wrong observable for basin transfer, that the high-dimensional wall is budgetary, and that the uncertainty exponent $\alpha$ is the right teacher-side order diagnostic. The two-hop experiment of Section~\ref{sec:extval-twohop} was prompted by that exchange.\footnote{An invitation to join as co-author of subsequent revisions has been extended and is pending at the time of writing; his contributions are therefore credited here rather than by authorship.}
+E.H. conceived and built the v1.0 harness and experiments, wrote v1.0, ran the v1.1 validation experiments, and wrote the present text. I.N. entered the project one day after the v1.0 release with an independent, from-scratch reimplementation of the harness, a replication of its headline results, and the four-part re-diagnosis filed as repository issue \#1 and validated in Section~\ref{sec:extval}: that the transmission losses and the selection effect belong to the parametric carrier rather than the field channel, that mean field error is the wrong observable for basin transfer, that the high-dimensional wall is budgetary, and that the uncertainty exponent $\alpha$ is the right teacher-side order diagnostic. Laws 3 and 5 are restated, and Law 2 sharpened, on the strength of those contributions; the two-hop experiment of Section~\ref{sec:extval-twohop} arose from the exchange. I.N. joined as co-author at v1.2.
 
 \subsection*{Reproducibility}
 
@@ -408,7 +412,7 @@ All experiments were implemented in MLX and run on a single Apple M-series lapto
 
 \subsection*{Revision history}
 
-\textbf{v1.0} (July 9, 2026): initial release. \textbf{v1.1} (July 10, 2026): added Section~\ref{sec:extval} (external validation: carrier swap, carrier cost curve, uncertainty-exponent measurement, two-hop distillation); restated Law 3 (mean-residual diagnosis withdrawn in favor of directional fidelity near basin boundaries) and Law 5 (selection located in the carrier); sharpened Law 2 with the uncertainty exponent $\alpha$; revised the Discussion and Conclusion accordingly. Prompted by repository issue \#1 (I.~Nemytchenko); see the Acknowledgments.
+\textbf{v1.0} (July 9, 2026): initial release. \textbf{v1.1} (July 10, 2026): added Section~\ref{sec:extval} (external validation: carrier swap, carrier cost curve, uncertainty-exponent measurement, two-hop distillation); restated Law 3 (mean-residual diagnosis withdrawn in favor of directional fidelity near basin boundaries) and Law 5 (selection located in the carrier); sharpened Law 2 with the uncertainty exponent $\alpha$; revised the Discussion and Conclusion accordingly; prompted by repository issue \#1. \textbf{v1.2} (July 10, 2026): Ivan Nemytchenko joins as co-author; contribution statement added; results unchanged.
 
 \begin{thebibliography}{99}
 
