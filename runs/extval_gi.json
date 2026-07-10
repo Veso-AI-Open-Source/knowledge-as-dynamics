@@ -1,0 +1,105 @@
+{
+  "clean": {
+    "ceilings": {
+      "joint": 0.9725,
+      "A": 0.9692307692307692,
+      "B": 0.975609756097561
+    },
+    "n_oracle_attractors": 9,
+    "carrier_samples": 262144,
+    "lineage": [
+      {
+        "basin_joint": 0.9925,
+        "basin_A": 0.9897435897435898,
+        "basin_B": 0.9951219512195122,
+        "n_attractors": 8,
+        "sites_recovered": 8,
+        "sites_total": 9
+      },
+      {
+        "basin_joint": 0.9925,
+        "basin_A": 1.0,
+        "basin_B": 0.9853658536585366,
+        "n_attractors": 8,
+        "sites_recovered": 8,
+        "sites_total": 9
+      },
+      {
+        "basin_joint": 0.99,
+        "basin_A": 1.0,
+        "basin_B": 0.9804878048780488,
+        "n_attractors": 8,
+        "sites_recovered": 8,
+        "sites_total": 9
+      },
+      {
+        "basin_joint": 0.99,
+        "basin_A": 1.0,
+        "basin_B": 0.9804878048780488,
+        "n_attractors": 8,
+        "sites_recovered": 8,
+        "sites_total": 9
+      },
+      {
+        "basin_joint": 0.99,
+        "basin_A": 1.0,
+        "basin_B": 0.9804878048780488,
+        "n_attractors": 8,
+        "sites_recovered": 8,
+        "sites_total": 9
+      }
+    ]
+  },
+  "contaminated": {
+    "ceilings": {
+      "joint": 0.9775,
+      "A": 0.9840425531914894,
+      "B": 0.9716981132075472
+    },
+    "n_oracle_attractors": 22,
+    "carrier_samples": 262144,
+    "lineage": [
+      {
+        "basin_joint": 0.83,
+        "basin_A": 1.0,
+        "basin_B": 0.6792452830188679,
+        "n_attractors": 22,
+        "sites_recovered": 19,
+        "sites_total": 22
+      },
+      {
+        "basin_joint": 0.825,
+        "basin_A": 1.0,
+        "basin_B": 0.6698113207547169,
+        "n_attractors": 22,
+        "sites_recovered": 19,
+        "sites_total": 22
+      },
+      {
+        "basin_joint": 0.83,
+        "basin_A": 1.0,
+        "basin_B": 0.6792452830188679,
+        "n_attractors": 21,
+        "sites_recovered": 19,
+        "sites_total": 22
+      },
+      {
+        "basin_joint": 0.8275,
+        "basin_A": 1.0,
+        "basin_B": 0.6745283018867925,
+        "n_attractors": 20,
+        "sites_recovered": 19,
+        "sites_total": 22
+      },
+      {
+        "basin_joint": 0.83,
+        "basin_A": 1.0,
+        "basin_B": 0.6792452830188679,
+        "n_attractors": 22,
+        "sites_recovered": 19,
+        "sites_total": 22
+      }
+    ]
+  },
+  "sgd_reference": "runs/gi.json (union 0.82, lineage 0.91->0.83, B_mem 0.24->0.19)"
+}

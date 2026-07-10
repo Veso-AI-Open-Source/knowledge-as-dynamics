@@ -302,3 +302,91 @@ What this buys the paper/program: both conceptual pillars of the inheritance loo
 (transfer AND composition+lineage) are now demonstrated at tier 1, with the frame-
 design principle as a new contribution. The single named blocker for everything
 remains high-dimensional field-matching precision.
+
+## Experiment 6 — external validation of GitHub issue #1 (2026-07-10, extval.py)
+
+**VERDICT: three of the issue's four claims CONFIRMED in our own harness; the
+GP-efficiency headline does NOT reproduce on our teacher; one NEW result (two-hop
+distillation) found in the process.**
+
+Context: Ivan Nemytchenko (@inem) filed issue #1 on the public repo with a gist
+reimplementation claiming: (1) transmission losses belong to the SGD carrier, not
+the field channel; (2) mean NMSE anti-correlates with basin transfer — wrong
+observable; (3) the high-dim wall is budgetary (lookup basin(N) has no plateau)
+and a GP/Wiener carrier reaches 0.48 from 16k pairs; (4) the uncertainty exponent
+α (Grebogi–Ott–Yorke) is a cheap teacher-only order parameter — α=0.45 on MNIST
+predicts the 0.71 ceiling as fractal basin-boundary geometry. Everything below ran
+against OUR cached artifacts (same teachers, worlds, oracle, evaluate()) via the
+new `extval.py` module (stages: gi / table / carriers / twohop / report). His
+gist's raw records match his tables, and his table-sampling code is line-for-line
+equivalent to our sample_z — so any divergence is at teacher level.
+
+E1 — carrier swap in the GI world (`extval gi`, 45s). Read-only 512² lattice
+snapshot of the union field replaces the SGD student; identical teachers, frame,
+oracle (BASIN_EPS 0.3).
+
+| arm | union joint | lineage gen1→5 | memorization graft (B-side) |
+|---|---|---|---|
+| SGD student (exp 5) | 0.82 | 0.91 → 0.83 | dies, ≤ 0.24 |
+| lattice carrier | 0.99 (ceiling 0.97) | 0.99 flat ×5 | SURVIVES 0.68 flat ×5, 19/22 sites |
+
+→ **Claim 1 confirmed, decisively.** The onion filter (exp 5 finding 4) is a
+property of lossy parametric compression, NOT of the field channel. Restate
+heredity+selection as carrier-dependent: what is heritable is what fits the
+carrier's budget.
+
+E2 — carrier cost curve on the MNIST teacher (`extval table` + `carriers`,
+3 seeds, 1M-pair (z,V) table from our sample_z prior, scored by our evaluate();
+ceiling 0.711, field arm 0.090, outdistill 0.191):
+
+| carrier | basin (3 seeds) |
+|---|---|
+| k-NN lookup, 16k pairs | 0.055 / 0.016 / 0.047 |
+| k-NN lookup, 262k | 0.270 / 0.273 / 0.305 |
+| k-NN lookup, 1M | 0.410 (all) |
+| GP M=16384, σ by held-out NMSE | 0.000 / 0.000 / 0.004 |
+| GP M=16384, σ by cos rule (0.25× median, interior max on 0.05–0.5× grid) | 0.164 / 0.020 / 0.102 |
+
+→ **Claim 3a (budgetary wall) confirmed**, stronger than his numbers (his 1M:
+0.32). **Claim 2 (wrong observable) confirmed**: 1M lookup has 8× worse NMSE than
+the field arm (0.397 vs 0.049) and 4.6× better basins; NMSE-selected σ scores
+~0.000 in every seed. The paper's residual-compounding diagnosis is withdrawn.
+**Claim 3b (GP 0.48 from 16k) NOT reproduced**: 0.095 ± 0.06 on our teacher.
+Crossed asymmetry — his NN-1M (0.32) is worse than ours (0.41) while his GP is
+far better — points at teacher-level field roughness. Offer him our cached
+teacher to isolate method vs teacher.
+
+α check (`alpha` module, our cached teacher, not his retrain): **α = 0.454**
+(his: 0.45), conv_frac 0.97, predicted ceiling 1−f(ε_probe) = 0.69 vs recorded
+self-agreement 0.711. → **Claim 4's MNIST anchor confirmed on the original
+artifact**, including the dissociation (rough boundaries, fully convergent
+dynamics). His d-scaling results were reviewed from his records only, not re-run.
+
+E3 — two-hop distillation (`extval twohop`, 6 seeds; NEW, not in the issue).
+GP carrier (16k pairs, cos-rule σ) used as a dense supervision oracle for a
+standard SGD student (same architecture/steps/sample budget as the field arm).
+Basins: **0.008 / 0.387 / 0.004 / 0.309 / 0.496 / 0.004** — bimodal, 3/6 in a
+success mode of 0.31–0.50 (mean 0.40). Seed 5's 0.496 is the best basin of the
+whole program: above the 1M lookup (0.410) from 60× fewer teacher queries, 5.5×
+the field arm, 70% of ceiling. Success-mode students beat their own supervisors
+used directly as carriers (0.02–0.164). The bimodality is INVISIBLE in
+field-space metrics — all six students sit at cos 0.82–0.83, NMSE 0.55–0.58;
+only basin separates success from failure. The wrong-observable theme recurs one
+level up, at the supervision signal: parametric students fail by unreliability,
+not incapacity.
+
+Caveats: GP divergence unresolved (teacher-sensitive, his headline was single-
+seed); two-hop success is 50/50 with no known predictor; NN-1M-supervised two-hop
+not run (fp16 ChunkedNN optimization unbenchmarked); d-scaling not independently
+re-run. Validation code (extval, alpha) + runs/extval_*.json released with the
+v1.1 commit; the 1M-pair table (runs/extval_table.npz) is regenerable via
+`extval table` and excluded by .gitignore.
+
+What this buys the paper: heredity+selection restated as carrier-budget ×
+boundary-geometry (α); the resolution/ρ law replaced by directional fidelity in
+decision-relevant regions; α adopted as the standard teacher-only diagnostic; the
+MNIST "limits" section reframed as cost + observable with lookup/GP carrier arms
+as baselines; and an existence proof that the parametric bottleneck is
+unreliability, not incapacity. Reply posted to issue #1 on 2026-07-10 with these
+results and a pending co-authorship invitation; paper revised to v1.1 the same
+day (Laws 3+5 restated, Law 2 sharpened with α, new Section 5).
