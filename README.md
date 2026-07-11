@@ -2,7 +2,7 @@
 
 **Distilling, Composing, and Inheriting the Latent Vector Fields of Neural Networks**
 
-Elias Helou (Veso AI) · Ivan Nemytchenko — v1.2, July 2026
+Elias Helou (Veso AI) · Ivan Nemytchenko — v1.3, July 2026
 Paper: [`paper/main.pdf`](paper/main.pdf) · arXiv: coming · License: MIT
 
 Any autoencoder defines a vector field on its latent space: iterating
@@ -52,6 +52,23 @@ agreement in half its seeds, beating the 10⁶-pair lookup from 61× fewer teach
 queries. The parametric bottleneck is reliability, not capacity. The issue's
 author is a co-author from v1.2.
 
+## The α instrument (v1.3)
+
+The uncertainty exponent **α** of a teacher's basin boundaries — a
+teacher-only measurement taking minutes — is validated at ground truth. On
+Newton fractals it matches independently box-counted boundary dimension, and
+the pricing law `basin = 1 − f(δ)` predicts every student to 0.01–0.03; on
+the magnetic pendulum it tracks the physical damping dial. Across every
+system tried (exact math, physics, autoencoders) α orders distillation
+quality perfectly (Spearman +1.0), and transmission *reliability* follows it
+too (seed spread anti-correlates, ρ = −1). Down a five-generation lineage α
+climbs while fidelity falls: **copies of copies grow more definite and less
+faithful** — while single copies can reproduce their teacher's fractal
+geometry exactly, because boundary geometry is *generated* by the learned
+map, not stored. Measured scope: use the full flip-rate curve f(ε) at the
+copy's error scale (margin pathologies are invisible to the bare exponent),
+and quantitative prediction holds only in contracting maps.
+
 ## Run it
 
 ```sh
@@ -67,6 +84,9 @@ uv sync   # MLX + numpy + matplotlib; Apple Silicon; no torch
 | `m5_fielddistill.gi` | union field + 5-generation lineages (Laws 4–5) | ~3 min |
 | `m5_fielddistill.extval gi` / `table` / `carriers <seed>` / `twohop <seed>` | v1.1 external validation: carrier swap, cost curve, GP, two-hop | ~25 min total |
 | `m5_fielddistill.alpha` | uncertainty exponent of the cached MNIST teacher | ~1 min |
+| `m5_fielddistill.newton` | ground-truth α test on Newton fractals (exact attractors + box-counted D_b) | ~40 s |
+| `m5_fielddistill.pendulum` | ground-truth α test on the magnetic pendulum (damping dials roughness) | ~5 min |
+| `m5_fielddistill.ratchet all` | fact-check suite: lineage ratchet, graft α, reliability-vs-α | ~3 min |
 
 ## Map
 

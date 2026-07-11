@@ -390,3 +390,173 @@ as baselines; and an existence proof that the parametric bottleneck is
 unreliability, not incapacity. Reply posted to issue #1 on 2026-07-10 with these
 results and a pending co-authorship invitation; paper revised to v1.1 the same
 day (Laws 3+5 restated, Law 2 sharpened with α, new Section 5).
+
+## Experiment 7 — the α test confirmed in math and physics harnesses (2026-07-11)
+
+**VERDICT: the proposed pre-transfer test — teacher-only α predicts
+distillability — is CONFIRMED in both ground-truth harnesses: Spearman(α,
+student basin) = +1.00 in each, and in the math harness the quantitative form
+basin = 1 − f(δ_eff) predicts student basins to 0.01–0.03. One pre-registered
+gate (G8, parametric budget monotonicity) FAILED, and the post-mortem shows the
+failure reproducing the paper's own reliability law.**
+
+Motivation: the v1.2 positioning identifies α-predicts-LLM-distillability as
+the experiment that would make the five laws matter beyond the AE toy. Before
+that jump, confirm the test in systems with EXACT ground truth — no trained
+teacher, analytically known attractors, and an independent geometric
+measurement of the boundary dimension to check the α estimator itself.
+
+Math harness (`newton.py`, 38 s): Newton's method on z^n − 1, n ∈ {2,3,4,5} —
+attractors are the n-th roots of unity, the map is exact, and degree dials
+boundary roughness (n=2: smooth line boundary; n≥3: the classic fractals).
+Students: MLP field regression at N ∈ {4k, 65k, 524k} pairs.
+
+| n | α (fit R²) | 2 − D_b (box count) | ceiling 1−f(ε₀.₀₅) | basin@524k | predicted 1−f(δ_eff) |
+|---|---|---|---|---|---|
+| 2 | 1.077 (.996) | 1.000 | 0.982 | 0.998 | 0.998 |
+| 3 | 0.570 (.998) | 0.609 | 0.883 | 0.962 | 0.962 |
+| 4 | 0.427 (.988) | 0.482 | 0.751 | 0.873 | 0.896 |
+| 5 | 0.338 (.989) | 0.410 | 0.711 | 0.808 | 0.814 |
+
+All four gates PASS: G1 estimator sanity (smooth case: α≈1, D_b=1.000 exact);
+G2 Grebogi–Ott–Yorke cross-check |α−(2−D_b)| ≤ 0.07 everywhere; G3 Spearman
++1.00; G4 budget weakly monotone (flat — the Newton field is easy, δ_eff≈0.01
+at every budget, so students sit AT their α-ceiling; ceiling binds, not
+budget). The headline is the last column: **basin = 1 − f(δ_eff), using only
+the teacher's f(ε) curve and the student's field error, predicts every one of
+the 12 student basins to 0.01–0.03.** α doesn't just rank distillability — it
+computes it.
+
+Physics harness (`pendulum.py`, 280 s): magnetic pendulum (damped pendulum
+over 3 magnets — the canonical fractal-basin system, McDonald/Grebogi/Ott/
+Yorke 1985), 4D state, students distill the time-T flow map (T=0.4). Damping
+is a PHYSICAL dial for boundary roughness:
+
+| damping b | α (fit R²) | 2 − D_b | ceiling | basin@16k | basin@131k |
+|---|---|---|---|---|---|
+| 0.60 | 0.902 (.998) | 0.934 | 0.930 | 0.912 | 0.898 |
+| 0.35 | 0.878 (.999) | 0.886 | 0.906 | 0.879 | 0.640 |
+| 0.20 | 0.570 (.985) | 0.706 | 0.776 | 0.234 | 0.091 |
+| 0.12 | 0.312 (.989) | 0.363 | 0.656 | 0.000 | 0.000 |
+
+G5 PASS (α monotone in damping — the physics dial works); G6 PASS (α vs 2−D_b
+within 0.14); G7 PASS (Spearman +1.00, and at BOTH budgets). **G8 FAIL**:
+basin@131k < basin@16k at two levels. Post-mortem (9 retrainings, recorded in
+runs/pendulum.json seed_check): (a) at b=0.2/16k, seeds span 0.00–0.42 — the
+bimodal parametric-reliability signature of the two-hop experiment, at low α;
+(b) the 131k degradation is systematic (b=0.35: 0.60±0.07 across 4 seeds vs
+0.879 at 16k) — at FIXED 8k training steps, a larger table means fewer
+effective epochs and an underfit decision region. The gate as pre-registered
+conflated the non-parametric cost-curve law (extval: lookup basin climbs with
+pairs, no optimization) with a parametric student at fixed optimization
+budget. Lesson recorded: budget laws are carrier-specific — lookup scales
+with pairs; parametric students need pairs AND steps scaled together.
+
+Cross-harness insight (the sharpest new fact): Newton n=3 and pendulum b=0.2
+have the SAME α ≈ 0.57 but student basins 0.96 vs 0.09–0.23. α alone sets the
+ceiling and the ordering; the achieved field error δ_eff sets where under the
+ceiling a student lands; the composition basin ≈ 1 − f(δ_eff) ~ 1 − C·δ_eff^α
+unifies both harnesses (validated quantitatively in Newton). Design
+consequence for the LLM experiment: measure BOTH the teacher-side α-analogue
+AND the student-side achievable imitation error; the prediction is their
+composition, not α alone.
+
+What this buys: the α → distillability law is confirmed on exact mathematical
+ground truth and on the canonical physics system, entirely outside
+autoencoders — it is a statement about dynamical systems plus function
+approximation, not about our AE toy. Green light for the LLM-scale α
+experiment. Both harnesses run in under 5 minutes and are candidate additions
+to the paper (or the blog post) as systems 2 and 3.
+
+## Experiment 8 — fact-check of the α-pivot claims (2026-07-11, ratchet.py)
+
+**VERDICT: two claims confirmed, one transformed into a better finding, two
+falsified. The α story survives as an ordering/reliability diagnostic and a
+lineage law; it dies as a universal single-copy law and as a sufficient
+audit statistic.** Five checks pre-registered in the module docstring; all
+run against the existing four worlds (~2.5 min total).
+
+| pair | α_t → α_s | ceiling_t → ceiling_s | basin | ratchet? |
+|---|---|---|---|---|
+| newton n=3 | 0.570 → 0.546 | 0.883 → 0.882 | 0.965 | no — NEUTRAL |
+| newton n=4 | 0.427 → 0.440 | 0.751 → 0.757 | 0.869 | no — NEUTRAL |
+| newton n=5 | 0.338 → 0.357 | 0.711 → 0.740 | 0.783 | no — NEUTRAL |
+| pendulum b=0.35 | 0.878 → 0.733 | 0.906 → 0.894 | 0.878 | no — ROUGHER |
+| pendulum b=0.2 | 0.570 → 0.410 | 0.776 → 0.790 | 0.422 | no — ROUGHER |
+| mnist field | 0.454 → 0.680 | 0.711 → 0.799 | 0.055 | YES — smoother |
+| gi union gen1 | 1.118 → 0.765 | 0.979 → 0.972 | 0.828 | no — ROUGHER |
+
+P1 (universal single-copy ratchet): **FALSIFIED** — 1/7 pairs. Single-hop
+copies do not systematically smooth; the direction is system-dependent
+(imperfect copies of near-smooth teachers come out ROUGHER; the rough MNIST
+teacher's copy came out smoother). BUT the lineage half of P1 is REAL: down
+the gi lineage α climbs 0.765 → 0.998 → 0.948 → 0.943 → 1.112 while
+self-ceiling climbs 0.972 → 0.993 and basin-vs-oracle falls 0.828 → 0.520.
+**Iterated copying smooths; single copying need not.** The
+more-definite-less-faithful signature (P2) is confirmed exactly where
+smoothing occurs — per-generation in the lineage, and at MNIST (ceiling
+0.799 > teacher's 0.711 with basin 0.055).
+
+The sleeper finding (from the P1 failure): **boundary geometry is generated,
+not stored.** Newton students replicate the teacher's fractal dimension to
+within noise (α_s within 0.02–0.03 of α_t; ceilings within 0.001–0.03) —
+because the student learns the SMOOTH one-step map and the fractal boundary
+re-emerges from iterating it. A finite-capacity carrier does not need to
+represent a D_b ≈ 1.6 (or 15.5) boundary; it needs to represent the
+generator. The copy tax is paid on errors interacting with the boundary,
+never on storing it. This kills the "finite capacity can't hold fractal
+boundaries" intuition behind the original ratchet hypothesis and is arguably
+a paper-worthy result on its own.
+
+P3 (fitted graft = α collapse): **FALSIFIED** — fit-frame oracle α_B 0.924
+vs iso 0.980, ceilings 0.960 vs 0.977: the OOD-chart oracle's boundary
+geometry is essentially intact at probe scale. The v1.1 graft failure
+(student B-side 0.14) is therefore a SCALE pathology, not an exponent
+pathology: chart compression shrinks basin margins ~3.6× against a fixed
+student error, i.e. it moves the copy's effective ε deeper into the f(ε)
+curve — a prefactor effect that the scale-free exponent α cannot see.
+Consequence for any α-audit: measure the FULL uncertainty curve f(ε) at the
+copy's expected error scale, never the exponent alone.
+
+P4 (two-factor law basin = 1 − f(δ_eff) on the pendulum): **FAILS
+quantitatively** (median |pred − actual| = 0.187; over-predicts at low
+damping, e.g. pred 0.68 vs actual 0.00–0.42). The one-shot quantitative form
+is specific to fast-contracting maps (Newton, where it hit 0.01–0.03);
+elsewhere the mapping from per-step error to effective perturbation is
+system-dependent. The ordering claims (G3/G7 Spearman +1.0) are unaffected.
+
+P5 (reliability spread vs α): **CONFIRMED** — seed spread at fixed 16k
+budget: 0.015 / 0.327 / 0.421 for α 0.902 / 0.878 / 0.570, Spearman −1.0.
+Transmission reliability collapses as boundaries roughen, echoing Law 2 and
+the two-hop bimodality with α as the controlling variable.
+
+Revised α doctrine after this experiment: KEEP α as the teacher-only
+ordering and reliability diagnostic and as the lineage-dynamics variable;
+DROP the universal single-copy ratchet, α-only audits, and plug-in
+quantitative prediction outside contracting maps; ADD generator
+compressibility of fractal boundaries. LLM-experiment design updates:
+measure the full flip-rate curve (not just its slope), calibrate the
+student's effective perturbation scale empirically, and expect ratchet
+effects only under repeated re-distillation, not single distillation.
+
+Novelty check on the sleeper finding (arXiv, 2026-07-11): the PHENOMENON
+CLASS is known in nonlinear dynamics — "climate replication": reservoir
+computers trained on trajectories replicate a chaotic ATTRACTOR's fractal
+dimension and Lyapunov spectrum (Pathak/Lu/Hunt/Girvan/Ott 2017,
+arXiv:1710.07313), RC/NGRC reconstruct basins of multistable systems
+including unseen attractors (Röhm et al. 2021, arXiv:2108.04074; Gauthier
+NGRC line; faithfulness conditions in arXiv:2401.00885). So "learned
+surrogates regenerate fractal invariants by learning the smooth generator"
+must be claimed as an EXTENSION, not a discovery: our specific measurement —
+uncertainty-exponent/boundary-dimension agreement of BASIN BOUNDARIES under
+data-free one-step FIELD regression (α_s ≈ α_t) — appears unmeasured, but
+would not surprise that community. CNN work on basins (arXiv:2309.15732,
+arXiv:2501.17603) is perception of basin images, not generation — unrelated.
+What appears GENUINELY novel (nothing found in KD or dynamics literatures):
+(a) α as a teacher-only PRE-TRANSFER predictor of distillability ordering;
+(b) the pricing law basin = 1 − f(δ_eff) linking copy error to knowledge
+loss; (c) the lineage α-ratchet (iterated re-distillation smooths boundary
+geometry, definite↑/faithful↓); (d) α_s ≈ α_t as a faithful-transfer
+diagnostic; (e) the KD ↔ fractal-basin-geometry bridge itself. Cite
+1710.07313 + 2108.04074 + 2401.00885 in any writeup; position Newton result
+as the basin-boundary/distillation extension of climate replication.
