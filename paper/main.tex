@@ -11,11 +11,18 @@
 \usepackage[round]{natbib}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 \usepackage{caption}
+\usepackage{etoolbox}
 \captionsetup{font=small,labelfont=bf}
 
 \newcommand{\enc}{E}
 \newcommand{\dec}{D}
 \newcommand{\Vfield}{V}
+
+% Pull the title block up so the hero figure fits on the abstract page.
+\makeatletter
+\patchcmd{\@maketitle}{\newpage\null\vskip 2em}{\newpage\vspace*{-2.6em}}{}{%
+  \GenericError{}{maketitle patch failed}{}{}}
+\makeatother
 
 \title{Knowledge as Dynamics: Distilling, Composing, and Inheriting\\the Latent Vector Fields of Neural Networks}
 
@@ -29,24 +36,27 @@ Independent researcher\\
 \texttt{nemytchenko@gmail.com}
 }
 
-\date{July 2026 --- v1.3, revised July 11, 2026\\[1.1em]
+\date{July 2026 --- v1.3, revised July 11, 2026\\[0.5em]
 \begin{tikzpicture}[x=0.0075cm,y=0.0075cm]
 \fill[black] (63.02,0.00) -- (30.75,0.00) -- (40.08,27.92) -- (22.39,19.09) -- (0.82,40.66) -- (38.35,60.06) -- (13.87,80.94) -- (25.28,109.22) -- (58.15,81.99) -- (68.49,112.91) -- (98.99,112.91) -- (90.79,87.16) -- (106.09,95.07) -- (128.92,72.25) -- (92.09,53.87) -- (116.53,33.62) -- (104.46,3.69) -- (72.80,30.68) -- (63.02,0.00) -- cycle;
 \end{tikzpicture}}
 
 \begin{document}
 \maketitle
+\thispagestyle{empty}
+\enlargethispage{2\baselineskip}
+\vspace{-2.2em}
 
 \begin{abstract}
 An autoencoder implicitly defines a vector field on its latent space: iterating $f = \enc \circ \dec$ displaces every point by $\Vfield(z) = f(z) - z$, and training carves attractors into this field that encode what the network has learned \citep{fumero2025}. We treat that field as the knowledge itself and measure it as a transmission channel (Figure~\ref{fig:hero}). Matching $\Vfield$ at sampled points transfers the teacher's basins of attraction with zero training data---$0.86$ against a $0.99$ ceiling, where output distillation reaches $0.53$ and static feature matching $0.15$. Two specialists' fields union into one data-free student ($0.82$) where behavioral merging scores $0.00$ on the grafted knowledge, and the composed knowledge survives five generations of re-distillation. What governs the channel is the geometry of basin boundaries, not mean field error---which \emph{anti-correlates} with transfer: the uncertainty exponent $\alpha$ of the teacher's boundaries, a teacher-only measurement taking minutes, orders transmission quality in every system tried (Spearman $+1.0$ across Newton fractals, the magnetic pendulum, and learned networks), matches independently box-counted boundary dimension, prices knowledge loss quantitatively in contracting maps ($\mathrm{basin} = 1 - f(\delta)$ to $0.01$--$0.03$), and predicts seed-to-seed reliability. Down a lineage of repeated re-distillation, boundary geometry smooths while fidelity falls: copies of copies grow more definite and less faithful---and this selection lives in the lossy carrier, not the channel. Everything runs on a laptop in minutes; every number has a released run record; failed pre-registered gates are reported alongside the confirmations.
-\end{abstract}
 
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=\linewidth]{figures/hero.png}
-  \caption{\textbf{The object and the claim in one image.} Left: a trained autoencoder's latent vector field $\Vfield(z) = \enc(\dec(z)) - z$; gray points are training-data encodings, black stars the attractors training carved into the field. Right: the field of a \emph{data-free} student trained only to match $\Vfield$ at sampled latent points---it never sees an input, a weight, or a training example---shown in teacher coordinates with both attractor sets overlaid. Basin agreement $0.84$ for this seed ($0.86$ over three seeds, against a $0.99$ ceiling; Table~\ref{tab:2d}); output distillation reaches $0.53$, static feature matching $0.15$. The field is the knowledge; the paper measures the channel it defines.}
-  \label{fig:hero}
-\end{figure}
+\vspace{0.1em}
+\begin{center}
+\includegraphics[width=0.80\linewidth]{figures/hero.png}
+\captionof{figure}{\textbf{The object and the claim.} Left: a teacher autoencoder's latent field $\Vfield(z) = \enc(\dec(z)) - z$ and the attractors training carved into it. Right: a \emph{data-free} student's field, regressed from field queries alone---no inputs, weights, or training data---with both attractor sets overlaid; basin agreement $0.84$ this seed (Table~\ref{tab:2d}).}
+\label{fig:hero}
+\end{center}
+\end{abstract}
 
 \section{Introduction}
 
